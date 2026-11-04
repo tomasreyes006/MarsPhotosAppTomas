@@ -15,28 +15,29 @@ import dev.archfoundry.marsphotosapp.network.MarsPhoto
 import kotlinx.coroutines.launch
 import java.io.IOException
 
-
-class MarsViewModel(private val marsPhotosRepository: MarsPhotosRepository) : ViewModel()  {
+class MarsViewModel(private val marsPhotosRepository: MarsPhotosRepository) : ViewModel() {
     var marsUiState: MarsUiState by mutableStateOf(value = MarsUiState.Loading)
         private set
 
     init {
         getMarsPhotos()
     }
-    fun getMarsPhotos(){
-        viewModelScope.launch {
-            try {
-                val result : List<MarsPhoto> = marsPhotosRepository.getMarsPhotos()
-                marsUiState = MarsUiState.Success("${result.size} fotos desde la api.")
-            }catch (_: IOException){
-                marsUiState = MarsUiState.Error
-            }
 
+    fun getMarsPhotos() {
+        viewModelScope.launch {
+            marsUiState = try {
+                val result: List<MarsPhoto> = marsPhotosRepository.getMarsPhotos()
+                val myPhoto: MarsPhoto = result[0]
+                MarsUiState.Success(photosList = result)
+            } catch (_: IOException) {
+                MarsUiState.Error
+            }
         }
     }
+
     companion object {
         val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
+            initializer<MarsViewModel> {
                 val application = (this[APPLICATION_KEY] as MarsPhotosApplication)
                 val marsPhotosRepository = application.container.marsPhotosRepository
                 MarsViewModel(marsPhotosRepository)
@@ -46,7 +47,7 @@ class MarsViewModel(private val marsPhotosRepository: MarsPhotosRepository) : Vi
 }
 
 sealed interface MarsUiState {
-    data class Success(val photos: String) : MarsUiState
+    data class Success(val photosList: List<MarsPhoto>) : MarsUiState
     object Error : MarsUiState
     object Loading : MarsUiState
 }
