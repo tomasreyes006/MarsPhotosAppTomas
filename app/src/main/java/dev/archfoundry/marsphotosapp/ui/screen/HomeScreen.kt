@@ -20,10 +20,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import dev.archfoundry.marsphotosapp.R
 import dev.archfoundry.marsphotosapp.network.MarsPhoto
 
@@ -32,13 +32,13 @@ fun HomeScreen(marsUiState: MarsUiState, retryEntry: () -> Unit, modifier: Modif
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         when (marsUiState) {
             is MarsUiState.Loading -> LoadingScreen(modifier = Modifier.fillMaxSize())
             is MarsUiState.Success -> PhotosGridScreen(
                 marsUiState.photosList,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
             )
 
             is MarsUiState.Error -> ErrorScreen(modifier = Modifier.fillMaxSize(), retryEntry = retryEntry)
@@ -51,7 +51,7 @@ fun PhotosGridScreen(photosList: List<MarsPhoto>, modifier: Modifier) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(150.dp),
         modifier = modifier.padding(horizontal = 4.dp),
-        contentPadding = PaddingValues(0.dp)
+        contentPadding = PaddingValues(0.dp),
     ) {
         items(items = photosList, key = { photo -> photo.id }) { photo ->
             MarsPhotoCard(
@@ -59,7 +59,7 @@ fun PhotosGridScreen(photosList: List<MarsPhoto>, modifier: Modifier) {
                 modifier = Modifier
                     .padding(4.dp)
                     .fillMaxWidth()
-                    .aspectRatio(1.5f)
+                    .aspectRatio(1.5f),
             )
         }
     }
@@ -67,43 +67,28 @@ fun PhotosGridScreen(photosList: List<MarsPhoto>, modifier: Modifier) {
 
 @Composable
 fun MarsPhotoCard(photo: MarsPhoto, modifier: Modifier = Modifier) {
-
     Card(modifier = modifier, elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)) {
-        AssyncImage(
+        AsyncImage(
             model = photo.imgSrc,
             contentDescription = null,
-            modifier = modifier.fillMaxSize(),
+            modifier = Modifier.fillMaxSize(),
             error = painterResource(id = R.drawable.ic_broken_image),
             placeholder = painterResource(id = R.drawable.loading_img),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
         )
-
     }
-    Text(photo.imgSrc)
 }
 
 @Composable
-fun AssyncImage(
-    model: String,
-    contentDescription: Nothing?,
-    modifier: Modifier,
-    error: Painter,
-    placeholder: Painter,
-    contentScale: ContentScale
-) {
-
-}
-
-@Composable
-fun ErrorScreen(modifier: Modifier, retryEntry : () -> Unit) {
+fun ErrorScreen(modifier: Modifier, retryEntry: () -> Unit) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Image(
             painter = painterResource(id = R.drawable.ic_connection_error),
-            contentDescription = null
+            contentDescription = null,
         )
         Text("Error...", modifier = Modifier.padding(all = 16.dp))
         Button(onClick = retryEntry) {
@@ -115,21 +100,10 @@ fun ErrorScreen(modifier: Modifier, retryEntry : () -> Unit) {
 @Composable
 fun LoadingScreen(modifier: Modifier) {
     Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+        modifier = modifier,
+        contentAlignment = Alignment.Center,
     ) {
         CircularProgressIndicator()
         Text(text = "Cargando")
-    }
-}
-
-@Composable
-fun ResultScreen(text: String) {
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = text)
     }
 }
